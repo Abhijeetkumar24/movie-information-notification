@@ -29,5 +29,14 @@ async function bootstrap() {
   });
   await kafkaApp.listen();
 
+  const mqttApp = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+    transport: Transport.MQTT,
+    options: {
+      url: 'mqtt://broker.hivemq.com',
+    },
+  });
+  await mqttApp.listen();
+
+
 }
 bootstrap();
