@@ -38,5 +38,18 @@ async function bootstrap() {
   await mqttApp.listen();
 
 
+  // const rabbitMqApp = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+  //   transport: Transport.RMQ,
+  //   options: {
+  //     urls: ['amqp://localhost:5672'],
+  //     queue: 'test_broadcast',
+  //     queueOptions: {
+  //       durable: false
+  //     },
+  //   },
+  // });
+
+  // await rabbitMqApp.listen();
+
 }
 bootstrap();

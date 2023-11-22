@@ -4,7 +4,7 @@ import { EventPattern, GrpcMethod, MessagePattern } from '@nestjs/microservices'
 import { MESSAGE } from 'src/interface/enum';
 import { AddMovieRequest, AddMovieResponse } from 'src/interface/notification.interface';
 import { MailerService } from '@nestjs-modules/mailer';
-import { Observable, of } from 'rxjs';
+import { Observable, from, of } from 'rxjs';
 
 @Controller('notification')
 export class NotificationController {
@@ -27,30 +27,27 @@ export class NotificationController {
 
     @MessagePattern('movie.add')
     async movieAdd(payload: any) {
-        for (const email of payload.data.emails) {
-            const mailOptions = {
-                to: email,
-                subject: MESSAGE.ADD_MOVIE_SUBJECT,
-                text: payload.title + MESSAGE.ADD_MOVIE_TEXT,
-            };
+        const mailOptions = {
+            to: payload.data.emails,
+            subject: MESSAGE.ADD_MOVIE_SUBJECT,
+            text: payload.title + MESSAGE.ADD_MOVIE_TEXT,
+        };
 
-            await this.mailerService.sendMail(mailOptions);
-        }
+        this.mailerService.sendMail(mailOptions);
+
         return;
     }
-
-
+   
+    
     @MessagePattern('notification.add.comment')
     async addComment(payload: any) {
-        for (const email of payload.subscriberEmails.emails) {
-            const mailOptions = {
-                to: email,
-                subject: MESSAGE.ADD_COMMENT_SUBJECT,
-                text: `${payload.name.toUpperCase()}${MESSAGE.ADD_COMMENT_TEXT}"${payload.text}"${MESSAGE.ON_MOVIE}"${payload.movieName}"`,
-            };
-            await this.mailerService.sendMail(mailOptions);
+        const mailOptions = {
+            to: payload.subscriberEmails.emails,
+            subject: MESSAGE.ADD_COMMENT_SUBJECT,
+            text: `${payload.name.toUpperCase()}${MESSAGE.ADD_COMMENT_TEXT}"${payload.text}"${MESSAGE.ON_MOVIE}"${payload.movieName}"`,
+        };
+        this.mailerService.sendMail(mailOptions);
 
-        }
         return MESSAGE.EMAIL_SEND;
     }
 }
