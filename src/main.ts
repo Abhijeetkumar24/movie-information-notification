@@ -5,38 +5,38 @@ import { join } from 'path';
 
 
 async function bootstrap() {
-  const httpApp = await NestFactory.create(AppModule);
-  await httpApp.listen(process.env.PORT);
-
-  const grpcApp = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
-    transport: Transport.GRPC,
-    options: {
-      url: 'localhost:50052',
-      package: 'notification',
-      protoPath: join(__dirname, '../../proto/notification.proto')
+  const app = await NestFactory.create(AppModule);
+  
+  const microserviceGrpc = app.connectMicroservice<MicroserviceOptions>(
+    {
+      transport: Transport.GRPC,
+      options: {
+        url: process.env.NOTIFICATION_GRPC_URL,
+        package: process.env.NOTIFICATION_PACKAGE,
+        protoPath: process.env.NOTIFICATION_PROTO_PATH
+      },
     },
-  },
-  );
-  await grpcApp.listen();
-
-  const kafkaApp = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+    );
+    
+    const kafkaMicroservice = app.connectMicroservice<MicroserviceOptions>( {
     transport: Transport.KAFKA,
     options: {
       client: {
-        brokers: ['192.168.2.151:9092'],
+        brokers: [process.env.KAFKA_URL],
       }
     }
   });
-  await kafkaApp.listen();
-
-  const mqttApp = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+  
+  
+  const mqttMicroservice = app.connectMicroservice<MicroserviceOptions>( {
     transport: Transport.MQTT,
     options: {
-      url: 'mqtt://broker.hivemq.com',
+      url: process.env.MQTT_URL,
     },
   });
-  await mqttApp.listen();
-
+  
+  await app.startAllMicroservices();
+  await app.listen(process.env.PORT);
 
 }
 bootstrap();
